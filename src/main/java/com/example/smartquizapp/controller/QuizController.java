@@ -57,52 +57,70 @@ public class QuizController {
 
         // Store start time in session
         session.setAttribute("quizStartTime_" + id, LocalDateTime.now());
-        
+
         model.addAttribute("quiz", quiz);
         model.addAttribute("questions", questions);
         return "quiz/start";
     }
 
-    // ✅ NEW: Submit quiz and calculate score
+    // ✅ FIXED: Submit quiz and calculate score with proper answer evaluation
     @PostMapping("/{id}/submit")
-    public String submitQuiz(@PathVariable("id") Long id,
-                           @RequestParam Map<String, String> allParams,
-                           HttpSession session,
-                           Model model) {
+public String submitQuiz(@PathVariable("id") Long id,
+                        @RequestParam Map<String, String> allParams,
+                        HttpSession session,
+                        Model model) {
 
-        Quiz quiz = quizRepository.findById(id).orElseThrow();
-        User student = (User) session.getAttribute("user");
+    Quiz quiz = quizRepository.findById(id).orElseThrow();
+    User student = (User) session.getAttribute("user");
 
-        if (student == null) {
-            return "redirect:/login";
-        }
+    if (student == null) {
+        return "redirect:/login";
+    }
 
-        // Extract answers (parameters like "q_1", "q_2", etc.)
-        Map<Long, String> answers = new HashMap<>();
-        for (Map.Entry<String, String> entry : allParams.entrySet()) {
-            if (entry.getKey().startsWith("q_")) {
-                try {
-                    Long questionId = Long.parseLong(entry.getKey().substring(2));
-                    answers.put(questionId, entry.getValue());
-                } catch (NumberFormatException e) {
-                    // Skip invalid question IDs
-                }
+    // Extract answers (parameters like "q_1", "q_2", etc.)
+    Map<Long, String> answers = new HashMap<>();
+    for (Map.Entry<String, String> entry : allParams.entrySet()) {
+        if (entry.getKey().startsWith("q_")) {
+            try {
+                Long questionId = Long.parseLong(entry.getKey().substring(2));
+                answers.put(questionId, entry.getValue());
+                
+                // Debug logging - show all captured answers
+                System.out.println("=== DEBUG: Captured answer ===");
+                System.out.println("Question ID: " + questionId);
+                System.out.println("User Answer: " + entry.getValue());
+                System.out.println("Parameter Key: " + entry.getKey());
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid question ID in parameter: " + entry.getKey());
             }
         }
-
-        // Get start time from session
-        LocalDateTime startedAt = (LocalDateTime) session.getAttribute("quizStartTime_" + id);
-        if (startedAt == null) {
-            startedAt = LocalDateTime.now(); // fallback
-        }
-
-        // Evaluate the attempt
-        Attempt attempt = quizService.evaluateAttempt(student, quiz, answers, startedAt);
-
-        model.addAttribute("score", attempt.getScore());
-        model.addAttribute("totalQuestions", quiz.getQuestions() != null ? quiz.getQuestions().size() : 0);
-        return "quiz/result";
     }
+
+    // Debug: Show all parameters received
+    System.out.println("=== DEBUG: All parameters received ===");
+    allParams.forEach((key, value) -> System.out.println(key + " = " + value));
+    
+    System.out.println("=== DEBUG: Processed answers ===");
+    answers.forEach((qId, answer) -> System.out.println("Q" + qId + " = " + answer));
+
+    // Get start time from session
+    LocalDateTime startedAt = (LocalDateTime) session.getAttribute("quizStartTime_" + id);
+    if (startedAt == null) {
+        startedAt = LocalDateTime.now(); // fallback
+    }
+
+    // Remove the start time from session
+    session.removeAttribute("quizStartTime_" + id);
+
+    // Evaluate the attempt
+    Attempt attempt = quizService.evaluateAttempt(student, quiz, answers, startedAt);
+
+    model.addAttribute("score", attempt.getScore());
+    model.addAttribute("maxScore", attempt.getMaxScore());
+    model.addAttribute("totalQuestions", quiz.getQuestions() != null ? quiz.getQuestions().size() : 0);
+    model.addAttribute("quiz", quiz);
+    return "quiz/result";
+}
 
     // ✅ NEW: View leaderboard for a quiz
     @GetMapping("/{id}/leaderboard")

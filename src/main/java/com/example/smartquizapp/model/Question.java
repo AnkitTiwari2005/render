@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Question {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -70,6 +70,17 @@ public class Question {
             if (optionD != null && !optionD.isBlank()) options.add(optionD);
         }
         return options;
+    }
+
+    // Helper method to get option letter for a given index
+    public String getOptionLetter(int index) {
+        switch (index) {
+            case 0: return "A";
+            case 1: return "B";
+            case 2: return "C";
+            case 3: return "D";
+            default: return "";
+        }
     }
 
     @PrePersist

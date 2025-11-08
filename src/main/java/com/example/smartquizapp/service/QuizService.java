@@ -20,7 +20,7 @@ public class QuizService {
     private final AttemptRepository attemptRepo;
 
     public QuizService(QuizRepository quizRepo, QuestionRepository questionRepo,
-                      UserRepository userRepo, AttemptRepository attemptRepo) {
+                     UserRepository userRepo, AttemptRepository attemptRepo) {
         this.quizRepo = quizRepo;
         this.questionRepo = questionRepo;
         this.userRepo = userRepo;
@@ -95,55 +95,84 @@ public class QuizService {
     }
 
     @Transactional
-    public Attempt evaluateAttempt(User student, Quiz quiz, Map<Long, String> answers, LocalDateTime startedAt) {
-        int score = 0;
-        int maxScore = 0;
+public Attempt evaluateAttempt(User student, Quiz quiz, Map<Long, String> answers, LocalDateTime startedAt) {
+    int score = 0;
+    int maxScore = 0;
 
-        List<Question> questions = questionRepo.findByQuizId(quiz.getId());
+    List<Question> questions = questionRepo.findByQuizId(quiz.getId());
 
-        // Prepare answers detail map
-        Map<String, Object> answersDetail = new HashMap<>();
+    // Debug: Show all questions and their correct answers
+    System.out.println("=== DEBUG: Questions in quiz ===");
+    for (Question question : questions) {
+        System.out.println("Question ID: " + question.getId());
+        System.out.println("Correct Answer: " + question.getCorrectOption().name());
+        System.out.println("Question Text: " + question.getText());
+    }
 
-        for (Question question : questions) {
-            maxScore += question.getMarks();
-            String userAnswer = answers.get(question.getId());
-            String correctAnswer = question.getCorrectOption().name();
-            boolean isCorrect = userAnswer != null && userAnswer.equals(correctAnswer);
+    // Prepare answers detail map
+    Map<String, Object> answersDetail = new HashMap<>();
 
-            if (isCorrect) {
-                score += question.getMarks();
-            }
-
-            // Store detailed answer information
-            Map<String, Object> answerDetail = new HashMap<>();
-            answerDetail.put("userAnswer", userAnswer);
-            answerDetail.put("correctAnswer", correctAnswer);
-            answerDetail.put("isCorrect", isCorrect);
-            answerDetail.put("questionId", question.getId());
-            answerDetail.put("questionText", question.getText());
-
-            answersDetail.put("q_" + question.getId(), answerDetail);
+    for (Question question : questions) {
+        maxScore += question.getMarks();
+        
+        // Get user's answer for this question
+        String userAnswer = answers.get(question.getId());
+        
+        // Get correct answer - convert enum to string
+        String correctAnswer = question.getCorrectOption().name();
+        
+        // Enhanced debug logging
+        System.out.println("=== DEBUG: Evaluating Question ===");
+        System.out.println("Question ID: " + question.getId());
+        System.out.println("User Answer: " + userAnswer);
+        System.out.println("Correct Answer: " + correctAnswer);
+        System.out.println("Is userAnswer null? " + (userAnswer == null));
+        System.out.println("Are they equal? " + (userAnswer != null && userAnswer.equals(correctAnswer)));
+        
+        // Compare answers (handle null userAnswer)
+        boolean isCorrect = userAnswer != null && userAnswer.equals(correctAnswer);
+        
+        if (isCorrect) {
+            score += question.getMarks();
+            System.out.println("✅ CORRECT! Added " + question.getMarks() + " marks");
+        } else {
+            System.out.println("❌ INCORRECT! User answered: " + userAnswer + ", Correct: " + correctAnswer);
         }
 
-        LocalDateTime finishedAt = LocalDateTime.now();
-        long timeTaken = Duration.between(startedAt, finishedAt).getSeconds();
+        // Store detailed answer information
+        Map<String, Object> answerDetail = new HashMap<>();
+        answerDetail.put("userAnswer", userAnswer);
+        answerDetail.put("correctAnswer", correctAnswer);
+        answerDetail.put("isCorrect", isCorrect);
+        answerDetail.put("questionId", question.getId());
+        answerDetail.put("questionText", question.getText());
+        answerDetail.put("marks", question.getMarks());
 
-        // Convert answers detail to JSON string
-        String answersJson = convertMapToJson(answersDetail);
-
-        Attempt attempt = Attempt.builder()
-                .student(student)
-                .quiz(quiz)
-                .score(score)
-                .maxScore(maxScore)
-                .startedAt(startedAt)
-                .finishedAt(finishedAt)
-                .timeTakenSeconds((int) timeTaken)
-                .answersJson(answersJson)
-                .build();
-
-        return attemptRepo.save(attempt);
+        answersDetail.put("q_" + question.getId(), answerDetail);
     }
+
+    System.out.println("=== DEBUG: FINAL SCORE ===");
+    System.out.println("Score: " + score + "/" + maxScore);
+
+    LocalDateTime finishedAt = LocalDateTime.now();
+    long timeTaken = Duration.between(startedAt, finishedAt).getSeconds();
+
+    // Convert answers detail to JSON string
+    String answersJson = convertMapToJson(answersDetail);
+
+    Attempt attempt = Attempt.builder()
+            .student(student)
+            .quiz(quiz)
+            .score(score)
+            .maxScore(maxScore)
+            .startedAt(startedAt)
+            .finishedAt(finishedAt)
+            .timeTakenSeconds((int) timeTaken)
+            .answersJson(answersJson)
+            .build();
+
+    return attemptRepo.save(attempt);
+}
 
     // Overloaded method for backward compatibility
     @Transactional
@@ -216,19 +245,25 @@ public class QuizService {
         quizRepo.save(quiz);
     }
 
-    // Helper method to convert map to JSON string (simplified)
+    // Helper method to convert map to JSON string using proper manual conversion
     private String convertMapToJson(Map<String, Object> map) {
         try {
-            // Simple JSON conversion - in production use Jackson ObjectMapper
+            // Simple but proper JSON conversion
             StringBuilder json = new StringBuilder("{");
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 json.append("\"").append(entry.getKey()).append("\":");
-                if (entry.getValue() instanceof String) {
-                    json.append("\"").append(entry.getValue()).append("\"");
-                } else if (entry.getValue() instanceof Boolean) {
+                
+                if (entry.getValue() instanceof Map) {
+                    // Handle nested map
+                    json.append(convertNestedMapToJson((Map<String, Object>) entry.getValue()));
+                } else if (entry.getValue() instanceof String) {
+                    json.append("\"").append(escapeJsonString((String) entry.getValue())).append("\"");
+                } else if (entry.getValue() instanceof Boolean || entry.getValue() instanceof Number) {
                     json.append(entry.getValue());
+                } else if (entry.getValue() == null) {
+                    json.append("null");
                 } else {
-                    json.append("\"").append(entry.getValue()).append("\"");
+                    json.append("\"").append(escapeJsonString(entry.getValue().toString())).append("\"");
                 }
                 json.append(",");
             }
@@ -238,7 +273,40 @@ public class QuizService {
             json.append("}");
             return json.toString();
         } catch (Exception e) {
+            System.err.println("Error converting map to JSON: " + e.getMessage());
             return "{}";
         }
+    }
+
+    private String convertNestedMapToJson(Map<String, Object> map) {
+        StringBuilder json = new StringBuilder("{");
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            json.append("\"").append(entry.getKey()).append("\":");
+            
+            if (entry.getValue() instanceof String) {
+                json.append("\"").append(escapeJsonString((String) entry.getValue())).append("\"");
+            } else if (entry.getValue() instanceof Boolean || entry.getValue() instanceof Number) {
+                json.append(entry.getValue());
+            } else if (entry.getValue() == null) {
+                json.append("null");
+            } else {
+                json.append("\"").append(escapeJsonString(entry.getValue().toString())).append("\"");
+            }
+            json.append(",");
+        }
+        if (json.length() > 1) {
+            json.setLength(json.length() - 1);
+        }
+        json.append("}");
+        return json.toString();
+    }
+
+    private String escapeJsonString(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t");
     }
 }
