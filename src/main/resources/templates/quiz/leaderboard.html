@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="'Leaderboard - ' + ${quiz.title}">Leaderboard - SmartQuizApp</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">🏆 Leaderboard</h2>
+                <a th:href="@{/quizzes}" class="btn btn-outline-primary">← Back to Quizzes</a>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0" th:text="'Quiz: ' + ${quiz.title}"></h4>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(leaders)}" class="alert alert-info text-center">
+                        No attempts yet for this quiz.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(leaders)}" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student</th>
+                                    <th>Score</th>
+                                    <th>Completed At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="a, iterStat : ${leaders}">
+                                    <td>
+                                        <span th:if="${iterStat.index == 0}" class="badge bg-warning">🥇 1st</span>
+                                        <span th:if="${iterStat.index == 1}" class="badge bg-secondary">🥈 2nd</span>
+                                        <span th:if="${iterStat.index == 2}" class="badge bg-danger">🥉 3rd</span>
+                                        <span th:if="${iterStat.index > 2}" th:text="${iterStat.index + 1} + 'th'" class="badge bg-light text-dark"></span>
+                                    </td>
+                                    <td th:text="${a.student.username}"></td>
+                                    <td>
+                                        <span class="badge bg-success" th:text="${a.score}"></span>
+                                    </td>
+                                    <td th:text="${#temporals.format(a.finishedAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Admin Dashboard - SmartQuizApp</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold text-primary">📊 Admin Dashboard</h3>
+                <a th:href="@{/admin/quiz/new}" class="btn btn-outline-primary fw-semibold">+ Create New Quiz</a>
+            </div>
+
+            <div class="table-responsive shadow-sm rounded">
+                <table class="table table-hover align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Quiz Title</th>
+                            <th scope="col">Duration (sec)</th>
+                            <th scope="col">Questions</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="quiz, iterStat : ${quizzes}">
+                            <td th:text="${iterStat.index + 1}"></td>
+                            <td th:text="${quiz.title}"></td>
+                            <td th:text="${quiz.durationSeconds}"></td>
+                            <td th:text="${#lists.size(quiz.questions)}"></td>
+                            <td>
+                                <!-- Add Question Button -->
+                                <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/question/new'}"
+                                   class="btn btn-sm btn-outline-success me-1">
+                                    ➕ Add Question
+                                </a>
+
+                                <!-- View Leaderboard Button -->
+                                <a th:href="@{'/quizzes/' + ${quiz.id} + '/leaderboard'}"
+                                   class="btn btn-sm btn-outline-info me-1">
+                                    🏆 View Leaderboard
+                                </a>
+
+                                <!-- Delete Quiz Form -->
+                                <form th:action="@{'/admin/quiz/' + ${quiz.id} + '/delete'}"
+                                      method="post" style="display:inline;">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Are you sure you want to delete this quiz?')">
+                                        🗑 Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <!-- No quizzes message -->
+                        <tr th:if="${#lists.isEmpty(quizzes)}">
+                            <td colspan="5" class="text-center text-muted">
+                                No quizzes available yet. Create one!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

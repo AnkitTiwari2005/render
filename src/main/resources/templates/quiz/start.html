@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="'Start Quiz - ' + ${quiz.title}">Start Quiz - SmartQuizApp</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-primary" th:text="${quiz.title}"></h3>
+                <div class="timer-container">
+                    <div class="alert alert-warning mb-0">
+                        <strong>Time Remaining: </strong>
+                        <span id="timer" class="fw-bold">05:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="quizForm" th:action="@{'/quizzes/' + ${quiz.id} + '/submit'}" method="post">
+                <div class="mb-4" th:each="q, iterStat : ${questions}">
+                    <div class="card p-4 mb-3 modern-card">
+                        <h5 th:text="'Q' + ${iterStat.index + 1} + '. ' + ${q.text}"></h5>
+                        <div class="mt-3">
+                            <div class="form-check" th:each="opt, optStat : ${q.options}">
+                                <input class="form-check-input" type="radio"
+                                       th:name="'q_' + ${q.id}"
+                                       th:value="${opt}"
+                                       th:id="${'q_' + q.id + '_opt_' + optStat.index}"
+                                       required>
+                                <label class="form-check-label" th:for="${'q_' + q.id + '_opt_' + optStat.index}"
+                                       th:text="${opt}"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Submit Quiz</button>
+            </form>
+        </div>
+
+        <!-- Timer Script -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var duration = /*[[${quiz.durationSeconds}]]*/ 300;
+            var display = document.querySelector('#timer');
+            var form = document.getElementById('quizForm');
+
+            function startTimer(duration, display, form) {
+                var timer = duration, minutes, seconds;
+                var interval = setInterval(function () {
+                    minutes = parseInt(timer / 60, 10);
+                    seconds = parseInt(timer % 60, 10);
+
+                    minutes = minutes < 10 ? "0" + minutes : minutes;
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                    display.textContent = minutes + ":" + seconds;
+
+                    if (--timer < 0) {
+                        clearInterval(interval);
+                        form.submit();
+                    }
+                }, 1000);
+            }
+
+            startTimer(duration, display, form);
+            /*]]>*/
+        </script>
+        <script th:src="@{/js/quiz-timer.js}"></script>
+    </div>
+</body>
+</html>

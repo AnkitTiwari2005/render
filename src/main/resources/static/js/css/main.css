@@ -1,0 +1,70 @@
+/* Additional custom styles to complement the inline styles */
+.quiz-card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 15px;
+}
+
+.quiz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.timer-warning {
+    color: #dc3545;
+    font-weight: bold;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.leaderboard-rank-1 {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.leaderboard-rank-2 {
+    background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+}
+
+.leaderboard-rank-3 {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    .btn-modern {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Additional styles for SmartQuizApp */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Fix for processing state */
+.btn:disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+/* Ensure forms work properly */
+form:invalid button[type="submit"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+form:valid button[type="submit"] {
+    opacity: 1;
+    cursor: pointer;
+}

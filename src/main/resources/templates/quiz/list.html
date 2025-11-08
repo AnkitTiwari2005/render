@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Available Quizzes - SmartQuizApp</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <h2 class="text-center mb-4">Available Quizzes</h2>
+
+            <div th:if="${#lists.isEmpty(quizzes)}" class="alert alert-info text-center">
+                No quizzes available right now.
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-lg-4 mb-4" th:each="quiz : ${quizzes}">
+                    <div class="card shadow-sm p-3 modern-card">
+                        <h5 class="fw-bold" th:text="${quiz.title}"></h5>
+                        <p th:text="'Total Questions: ' + ${#lists.size(quiz.questions)}"></p>
+                        <p><strong>Duration:</strong> <span th:text="${quiz.durationSeconds}"></span> seconds</p>
+                        <a th:href="@{'/quizzes/' + ${quiz.id} + '/start'}" class="btn btn-primary w-100">Start Quiz</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

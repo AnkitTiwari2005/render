@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Create Quiz - SmartQuizApp</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create New Quiz</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" th:action="@{/admin/quiz}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Quiz Title</label>
+                            <input name="title" class="form-control" placeholder="Enter quiz title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Duration (seconds)</label>
+                            <input type="number" name="durationSeconds" class="form-control" placeholder="Enter duration in seconds" value="300" min="60" required>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a th:href="@{/admin/dashboard}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Quiz</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
