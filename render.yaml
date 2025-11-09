@@ -1,0 +1,29 @@
+# render.yaml
+services:
+  # Database
+  - type: postgres
+    name: smartquizapp-db
+    plan: free
+    ipAllowList: []  # Only allow internal connections
+    
+  # Web Application
+  - type: web
+    name: smartquizapp
+    env: docker
+    plan: free
+    branch: main
+    envVars:
+      - key: JDBC_DATABASE_URL
+        fromDatabase:
+          name: smartquizapp-db
+          property: connectionString
+      - key: JDBC_DATABASE_USERNAME
+        fromDatabase:
+          name: smartquizapp-db
+          property: user
+      - key: JDBC_DATABASE_PASSWORD
+        fromDatabase:
+          name: smartquizapp-db
+          property: password
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod

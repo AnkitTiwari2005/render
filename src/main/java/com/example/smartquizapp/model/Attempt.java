@@ -13,7 +13,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attempt {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,7 +43,8 @@ public class Attempt {
     @Column(name = "time_taken_seconds")
     private Integer timeTakenSeconds;
 
-    @Column(name = "answers_json", columnDefinition = "json")
+    // UPDATED: Changed from "json" to "text" for PostgreSQL compatibility
+    @Column(name = "answers_json", columnDefinition = "TEXT")
     private String answersJson;
 
     @PrePersist

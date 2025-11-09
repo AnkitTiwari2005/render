@@ -246,44 +246,19 @@ public Attempt evaluateAttempt(User student, Quiz quiz, Map<Long, String> answer
     }
 
     // Helper method to convert map to JSON string using proper manual conversion
-    private String convertMapToJson(Map<String, Object> map) {
-        try {
-            // Simple but proper JSON conversion
-            StringBuilder json = new StringBuilder("{");
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                json.append("\"").append(entry.getKey()).append("\":");
-                
-                if (entry.getValue() instanceof Map) {
-                    // Handle nested map
-                    json.append(convertNestedMapToJson((Map<String, Object>) entry.getValue()));
-                } else if (entry.getValue() instanceof String) {
-                    json.append("\"").append(escapeJsonString((String) entry.getValue())).append("\"");
-                } else if (entry.getValue() instanceof Boolean || entry.getValue() instanceof Number) {
-                    json.append(entry.getValue());
-                } else if (entry.getValue() == null) {
-                    json.append("null");
-                } else {
-                    json.append("\"").append(escapeJsonString(entry.getValue().toString())).append("\"");
-                }
-                json.append(",");
-            }
-            if (json.length() > 1) {
-                json.setLength(json.length() - 1); // Remove trailing comma
-            }
-            json.append("}");
-            return json.toString();
-        } catch (Exception e) {
-            System.err.println("Error converting map to JSON: " + e.getMessage());
-            return "{}";
-        }
-    }
+    // In your QuizService.java, update the convertMapToJson method:
 
-    private String convertNestedMapToJson(Map<String, Object> map) {
+private String convertMapToJson(Map<String, Object> map) {
+    try {
+        // Simple but proper JSON conversion
         StringBuilder json = new StringBuilder("{");
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             json.append("\"").append(entry.getKey()).append("\":");
             
-            if (entry.getValue() instanceof String) {
+            if (entry.getValue() instanceof Map) {
+                // Handle nested map
+                json.append(convertNestedMapToJson((Map<String, Object>) entry.getValue()));
+            } else if (entry.getValue() instanceof String) {
                 json.append("\"").append(escapeJsonString((String) entry.getValue())).append("\"");
             } else if (entry.getValue() instanceof Boolean || entry.getValue() instanceof Number) {
                 json.append(entry.getValue());
@@ -295,18 +270,45 @@ public Attempt evaluateAttempt(User student, Quiz quiz, Map<Long, String> answer
             json.append(",");
         }
         if (json.length() > 1) {
-            json.setLength(json.length() - 1);
+            json.setLength(json.length() - 1); // Remove trailing comma
         }
         json.append("}");
         return json.toString();
+    } catch (Exception e) {
+        System.err.println("Error converting map to JSON: " + e.getMessage());
+        return "{}";
     }
+}
 
-    private String escapeJsonString(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                  .replace("\"", "\\\"")
-                  .replace("\n", "\\n")
-                  .replace("\r", "\\r")
-                  .replace("\t", "\\t");
+private String convertNestedMapToJson(Map<String, Object> map) {
+    StringBuilder json = new StringBuilder("{");
+    for (Map.Entry<String, Object> entry : map.entrySet()) {
+        json.append("\"").append(entry.getKey()).append("\":");
+        
+        if (entry.getValue() instanceof String) {
+            json.append("\"").append(escapeJsonString((String) entry.getValue())).append("\"");
+        } else if (entry.getValue() instanceof Boolean || entry.getValue() instanceof Number) {
+            json.append(entry.getValue());
+        } else if (entry.getValue() == null) {
+            json.append("null");
+        } else {
+            json.append("\"").append(escapeJsonString(entry.getValue().toString())).append("\"");
+        }
+        json.append(",");
     }
+    if (json.length() > 1) {
+        json.setLength(json.length() - 1);
+    }
+    json.append("}");
+    return json.toString();
+}
+
+private String escapeJsonString(String str) {
+    if (str == null) return "";
+    return str.replace("\\", "\\\\")
+              .replace("\"", "\\\"")
+              .replace("\n", "\\n")
+              .replace("\r", "\\r")
+              .replace("\t", "\\t");
+}
 }
