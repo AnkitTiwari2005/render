@@ -6,13 +6,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user")
+@Table(name = "app_user") // CHANGED FROM "user" to "app_user"
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
