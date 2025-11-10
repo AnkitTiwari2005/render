@@ -127,8 +127,11 @@
                                         </div>
                                     </td>
                                     <td class="text-end pe-4">
-                                        <small class="text-muted" 
+                                        <small class="text-muted" th:if="${a.finishedAt != null}"
                                                th:text="${#temporals.format(a.finishedAt, 'MMM dd, yyyy HH:mm')}">
+                                        </small>
+                                        <small class="text-muted" th:if="${a.finishedAt == null}">
+                                            Not completed
                                         </small>
                                     </td>
                                 </tr>
