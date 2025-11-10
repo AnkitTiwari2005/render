@@ -20,13 +20,13 @@
 
                     <form th:action="@{/login}" method="post" class="needs-validation" novalidate>
                         <!-- Alert Messages -->
-                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <div th:if="${error}" class="alert alert-danger alert-modern alert-dismissible fade show" role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             <span th:text="${error}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
 
-                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <div th:if="${success}" class="alert alert-success alert-modern alert-dismissible fade show" role="alert">
                             <i class="bi bi-check-circle-fill me-2"></i>
                             <span th:text="${success}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -137,7 +137,7 @@
             document.getElementById('togglePassword').addEventListener('click', function() {
                 const passwordInput = document.getElementById('password');
                 const icon = this.querySelector('i');
-
+                
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
                     icon.classList.remove('bi-eye');
