@@ -4,50 +4,161 @@
       layout:decorate="~{layout}">
 <head>
     <title th:text="'Leaderboard - ' + ${quiz.title}">Leaderboard - SmartQuizApp</title>
+    <style>
+        .rank-1 {
+            background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+            color: white;
+        }
+        
+        .rank-2 {
+            background: linear-gradient(135deg, #C0C0C0, #A9A9A9) !important;
+            color: white;
+        }
+        
+        .rank-3 {
+            background: linear-gradient(135deg, #CD7F32, #8B4513) !important;
+            color: white;
+        }
+        
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .current-user {
+            background: rgba(67, 97, 238, 0.1) !important;
+            border-left: 4px solid var(--primary);
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container py-4">
+        <div class="container py-5">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-primary">🏆 Leaderboard</h2>
-                <a th:href="@{/quizzes}" class="btn btn-outline-primary">← Back to Quizzes</a>
+                <div>
+                    <h2 class="text-primary mb-1">🏆 Leaderboard</h2>
+                    <p class="text-muted mb-0" th:text="'Quiz: ' + ${quiz.title}"></p>
+                </div>
+                <a th:href="@{/quizzes}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Quizzes
+                </a>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0" th:text="'Quiz: ' + ${quiz.title}"></h4>
+            <div class="modern-card">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Top Performers</h5>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-light text-dark">
+                                <span th:text="${#lists.size(leaders)}"></span> participants
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div th:if="${#lists.isEmpty(leaders)}" class="alert alert-info text-center">
-                        No attempts yet for this quiz.
+                
+                <div class="card-body p-0">
+                    <div th:if="${#lists.isEmpty(leaders)}" class="text-center py-5">
+                        <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                        <h5 class="text-muted">No attempts yet</h5>
+                        <p class="text-muted">Be the first to complete this quiz!</p>
+                        <a th:href="@{'/quizzes/' + ${quiz.id} + '/start'}" class="btn btn-modern">
+                            <i class="bi bi-play-circle me-2"></i>Start Quiz
+                        </a>
                     </div>
 
                     <div th:unless="${#lists.isEmpty(leaders)}" class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-modern table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Rank</th>
-                                    <th>Student</th>
-                                    <th>Score</th>
-                                    <th>Completed At</th>
+                                    <th scope="col" class="ps-4">Rank</th>
+                                    <th scope="col">Student</th>
+                                    <th scope="col">Score</th>
+                                    <th scope="col">Percentage</th>
+                                    <th scope="col" class="text-end pe-4">Completed At</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="a, iterStat : ${leaders}">
-                                    <td>
-                                        <span th:if="${iterStat.index == 0}" class="badge bg-warning">🥇 1st</span>
-                                        <span th:if="${iterStat.index == 1}" class="badge bg-secondary">🥈 2nd</span>
-                                        <span th:if="${iterStat.index == 2}" class="badge bg-danger">🥉 3rd</span>
-                                        <span th:if="${iterStat.index > 2}" th:text="${iterStat.index + 1} + 'th'" class="badge bg-light text-dark"></span>
+                                <tr th:each="a, iterStat : ${leaders}" 
+                                    th:classappend="${iterStat.index == 0} ? 'rank-1' : 
+                                                   ${iterStat.index == 1} ? 'rank-2' : 
+                                                   ${iterStat.index == 2} ? 'rank-3' : ''">
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div th:if="${iterStat.index < 3}" 
+                                                 class="rank-badge me-3"
+                                                 th:classappend="${iterStat.index == 0} ? 'bg-warning' : 
+                                                                ${iterStat.index == 1} ? 'bg-secondary' : 
+                                                                'bg-danger'">
+                                                <span th:text="${iterStat.index + 1}"></span>
+                                            </div>
+                                            <span th:if="${iterStat.index >= 3}" 
+                                                  class="fw-semibold text-muted"
+                                                  th:text="${iterStat.index + 1}"></span>
+                                        </div>
                                     </td>
-                                    <td th:text="${a.student.username}"></td>
                                     <td>
-                                        <span class="badge bg-success" th:text="${a.score}"></span>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle me-2 text-muted"></i>
+                                            <span th:text="${a.student.username}"></span>
+                                        </div>
                                     </td>
-                                    <td th:text="${#temporals.format(a.finishedAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td>
+                                        <span class="badge bg-success fs-6">
+                                            <span th:text="${a.score}"></span>/<span th:text="${a.maxScore}"></span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress progress-modern me-2" style="width: 80px;">
+                                                <div class="progress-bar" 
+                                                     th:style="'width: ' + ${(a.score / a.maxScore) * 100} + '%;'">
+                                                </div>
+                                            </div>
+                                            <span class="fw-semibold" 
+                                                  th:text="${#numbers.formatDecimal((a.score/a.maxScore)*100, 1, 1)} + '%'">
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <small class="text-muted" 
+                                               th:text="${#temporals.format(a.finishedAt, 'MMM dd, yyyy HH:mm')}">
+                                        </small>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div th:unless="${#lists.isEmpty(leaders)}" class="row mt-4">
+                <div class="col-md-4">
+                    <div class="modern-card p-3 text-center">
+                        <i class="bi bi-trophy text-warning display-6 mb-2"></i>
+                        <h4 th:text="${leaders[0].student.username}">Champion</h4>
+                        <small class="text-muted">Top Performer</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="modern-card p-3 text-center">
+                        <i class="bi bi-graph-up text-success display-6 mb-2"></i>
+                        <h4 th:text="${#numbers.formatDecimal((leaders[0].score/leaders[0].maxScore)*100, 1, 1)} + '%'">100%</h4>
+                        <small class="text-muted">Highest Score</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="modern-card p-3 text-center">
+                        <i class="bi bi-people text-info display-6 mb-2"></i>
+                        <h4 th:text="${#lists.size(leaders)}">0</h4>
+                        <small class="text-muted">Total Participants</small>
                     </div>
                 </div>
             </div>
