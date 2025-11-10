@@ -7,20 +7,61 @@
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container py-4">
-            <h2 class="text-center mb-4">Available Quizzes</h2>
-
-            <div th:if="${#lists.isEmpty(quizzes)}" class="alert alert-info text-center">
-                No quizzes available right now.
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h1 class="fw-bold text-primary mb-3">🎯 Available Quizzes</h1>
+                <p class="text-muted lead">Test your knowledge with our curated collection of quizzes</p>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 col-lg-4 mb-4" th:each="quiz : ${quizzes}">
-                    <div class="card shadow-sm p-3 modern-card">
-                        <h5 class="fw-bold" th:text="${quiz.title}"></h5>
-                        <p th:text="'Total Questions: ' + ${#lists.size(quiz.questions)}"></p>
-                        <p><strong>Duration:</strong> <span th:text="${quiz.durationSeconds}"></span> seconds</p>
-                        <a th:href="@{'/quizzes/' + ${quiz.id} + '/start'}" class="btn btn-primary w-100">Start Quiz</a>
+            <div th:if="${#lists.isEmpty(quizzes)}" class="text-center py-5">
+                <div class="modern-card p-5">
+                    <i class="bi bi-inbox display-1 text-muted mb-4"></i>
+                    <h4 class="text-muted mb-3">No quizzes available</h4>
+                    <p class="text-muted mb-4">Check back later for new quizzes or contact your administrator.</p>
+                    <a th:href="@{/}" class="btn btn-modern">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="quiz : ${quizzes}">
+                    <div class="modern-card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold text-dark mb-2" th:text="${quiz.title}"></h5>
+                                    <div class="d-flex align-items-center text-muted small mb-2">
+                                        <i class="bi bi-question-circle me-1"></i>
+                                        <span th:text="${#lists.size(quiz.questions)} + ' questions'"></span>
+                                    </div>
+                                </div>
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-clock me-1"></i>
+                                    <span th:text="${quiz.durationSeconds}"></span>s
+                                </span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="progress progress-modern mb-2">
+                                    <div class="progress-bar" style="width: 100%"></div>
+                                </div>
+                                <small class="text-muted">Complete all questions to see your score</small>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <a th:href="@{'/quizzes/' + ${quiz.id} + '/start'}" 
+                                   class="btn btn-modern">
+                                    <i class="bi bi-play-circle me-2"></i>Start Quiz
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar me-1"></i>
+                                Created <span th:text="${#dates.format(quiz.createdAt, 'MMM dd, yyyy')}"></span>
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
