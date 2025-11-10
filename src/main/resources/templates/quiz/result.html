@@ -4,137 +4,49 @@
       layout:decorate="~{layout}">
 <head>
     <title>Quiz Result - SmartQuizApp</title>
-    <style>
-        .score-circle {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: conic-gradient(var(--primary) 0% calc(var(--score-percent) * 1%), #e9ecef calc(var(--score-percent) * 1%) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            position: relative;
-        }
-        
-        .score-circle::before {
-            content: '';
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background: white;
-            border-radius: 50%;
-        }
-        
-        .score-text {
-            position: relative;
-            z-index: 1;
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-        
-        .performance-excellent { color: #28a745; }
-        .performance-good { color: #17a2b8; }
-        .performance-average { color: #ffc107; }
-        .performance-poor { color: #dc3545; }
-    </style>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="container py-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="modern-card p-5 text-center">
-                        <!-- Score Circle -->
-                        <div th:with="scorePercent=${(score / maxScore) * 100}" 
-                             class="score-circle mb-4" 
-                             style="--score-percent: [[${scorePercent}]]">
-                            <div class="score-text">
-                                <span th:text="${score}"></span>/<span th:text="${maxScore}"></span>
-                            </div>
-                        </div>
+            <div class="text-center">
+                <div class="mb-4">
+                    <i class="bi bi-trophy-fill display-1 text-warning"></i>
+                </div>
+                <h2>🎯 Quiz Completed!</h2>
+                <h4 class="mt-3">Your Score:
+                    <span class="text-primary" th:text="${score}"></span> /
+                    <span th:text="${maxScore}"></span>
+                </h4>
+                <p class="text-muted" th:if="${totalQuestions != null}">
+                    (<span th:text="${score}"></span> out of <span th:text="${totalQuestions}"></span> questions correct)
+                </p>
 
-                        <div class="mb-4">
-                            <i class="bi bi-trophy-fill display-1 text-warning mb-3"></i>
-                            <h2 class="fw-bold text-dark mb-2">Quiz Completed! 🎉</h2>
-                            <p class="text-muted lead">You scored <span th:text="${score}"></span> out of <span th:text="${maxScore}"></span> points</p>
+                <!-- Performance Message -->
+                <div th:if="${score != null && maxScore != null}" class="mt-3">
+                    <th:block th:if="${score >= maxScore * 0.8}">
+                        <div class="alert alert-success">
+                            <i class="bi bi-star-fill me-2"></i>Excellent! Outstanding performance!
                         </div>
+                    </th:block>
+                    <th:block th:if="${score >= maxScore * 0.6 && score < maxScore * 0.8}">
+                        <div class="alert alert-info">
+                            <i class="bi bi-check-circle me-2"></i>Good job! Well done!
+                        </div>
+                    </th:block>
+                    <th:block th:if="${score < maxScore * 0.6}">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-lightbulb me-2"></i>Keep practicing! You can do better!
+                        </div>
+                    </th:block>
+                </div>
 
-                        <!-- Performance Message -->
-                        <div th:if="${score != null && maxScore != null}" class="mb-4">
-                            <th:block th:if="${score >= maxScore * 0.8}">
-                                <div class="alert alert-success alert-modern">
-                                    <i class="bi bi-stars me-2"></i>
-                                    <h5 class="mb-1 performance-excellent">Outstanding Performance!</h5>
-                                    <p class="mb-0">You've demonstrated excellent understanding of the material!</p>
-                                </div>
-                            </th:block>
-                            <th:block th:if="${score >= maxScore * 0.6 && score < maxScore * 0.8}">
-                                <div class="alert alert-info alert-modern">
-                                    <i class="bi bi-check-circle me-2"></i>
-                                    <h5 class="mb-1 performance-good">Great Job!</h5>
-                                    <p class="mb-0">You have a good grasp of the concepts. Keep it up!</p>
-                                </div>
-                            </th:block>
-                            <th:block th:if="${score < maxScore * 0.6}">
-                                <div class="alert alert-warning alert-modern">
-                                    <i class="bi bi-lightbulb me-2"></i>
-                                    <h5 class="mb-1 performance-average">Keep Practicing!</h5>
-                                    <p class="mb-0">Review the material and try again. You can do better!</p>
-                                </div>
-                            </th:block>
-                        </div>
-
-                        <!-- Stats -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <div class="modern-card p-3">
-                                    <i class="bi bi-check-circle text-success display-6 mb-2"></i>
-                                    <h5 th:text="${score}">0</h5>
-                                    <small class="text-muted">Correct Answers</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="modern-card p-3">
-                                    <i class="bi bi-percent text-info display-6 mb-2"></i>
-                                    <h5 th:text="${#numbers.formatDecimal((score/maxScore)*100, 1, 1)}">0</h5>
-                                    <small class="text-muted">Percentage</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="modern-card p-3">
-                                    <i class="bi bi-clock text-warning display-6 mb-2"></i>
-                                    <h5 th:text="${totalQuestions}">0</h5>
-                                    <small class="text-muted">Total Questions</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-center">
-                            <a th:href="@{'/quizzes/' + ${quiz.id} + '/leaderboard'}" 
-                               class="btn btn-info btn-lg me-md-2">
-                                <i class="bi bi-trophy me-2"></i>View Leaderboard
-                            </a>
-                            <a th:href="@{/quizzes}" class="btn btn-outline-primary btn-lg">
-                                <i class="bi bi-arrow-left me-2"></i>Back to Quizzes
-                            </a>
-                        </div>
-
-                        <!-- Quick Actions -->
-                        <div class="mt-4 pt-4 border-top">
-                            <h6 class="text-muted mb-3">What would you like to do next?</h6>
-                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                <a th:href="@{'/quizzes/' + ${quiz.id} + '/start'}" 
-                                   class="btn btn-outline-success btn-sm">
-                                    <i class="bi bi-arrow-repeat me-1"></i>Retry Quiz
-                                </a>
-                                <a th:href="@{/}" class="btn btn-outline-secondary btn-sm">
-                                    <i class="bi bi-house me-1"></i>Go Home
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mt-4">
+                    <a th:href="@{'/quizzes/' + ${quiz.id} + '/leaderboard'}" class="btn btn-info me-2">
+                        🏆 View Leaderboard
+                    </a>
+                    <a th:href="@{/quizzes}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-2"></i> Back to Quizzes
+                    </a>
                 </div>
             </div>
         </div>
